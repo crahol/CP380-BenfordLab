@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -15,8 +16,8 @@ namespace BenfordLab
 
     public class Benford
     {
-       
-        public static BenfordData[] calculateBenford(string csvFilePath)
+
+        public static BenfordData[] calculateBenford(string csvFilePath)        
         {
             // load the data
             var data = File.ReadAllLines(csvFilePath)
@@ -28,20 +29,21 @@ namespace BenfordLab
                     Population = int.Parse(data.Groups[2].Value)
                 });
 
-            // manipulate the data!
-            //
-            // Select() with:
-            //   - Country
-            //   - Digit (using: FirstDigit.getFirstDigit() )
-            // 
-            // Then:
-            //   - you need to count how many of *each digit* there are
-            //
-            // Lastly:
-            //   - transform (select) the data so that you have a list of
-            //     BenfordData objects
-            //
-            var m = ??? ;
+            var dataCountryWise = data.Select(x => new { Country = x.Country, Digit = FirstDigit.getFirstDigit(x.Population) }).ToArray();
+
+            var countSortCountryWise =  dataCountryWise.GroupBy(x => x.Digit)
+                                        .Select(country => (Digit: country.Key, Count: country.Count()))
+                                        .OrderByDescending(x => x.Digit).ToArray();
+
+            List<BenfordData> m = new List<BenfordData>();
+            foreach (var item in countSortCountryWise)
+            {
+                m.Add(new BenfordData
+                {
+                    Digit = item.Digit,
+                    Count = item.Count
+                });
+            }
 
             return m.ToArray();
         }
